@@ -90,6 +90,11 @@ module.exports =
     doc.set('parent', latest._id)
 
     doc = yield doc.save()
+#    try
+#      doc = yield doc.save()
+#    catch e
+#      yield latest.update({$set: _.pick(latest.toObject(), 'version', 'index', 'slug')})
+#      throw e
 
     editPath = req.headers['x-current-path']
     docLink = "http://codecombat.com#{editPath}"

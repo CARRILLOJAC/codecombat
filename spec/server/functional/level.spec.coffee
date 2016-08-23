@@ -54,6 +54,25 @@ describe 'POST /db/level/:handle', ->
     [res, body] = yield request.postAsync({url: url, json: levelJSON})
     expect(res.statusCode).toBe(200)
     done()
+    
+    
+describe 'POST /db/level/:handle', ->
+  it 'does not break the target level if a name change would conflict with another level', utils.wrap (done) ->
+    yield utils.clearModels([Level, User])
+    user = yield utils.initUser()
+    yield utils.loginUser(user)
+    yield utils.makeLevel({name: 'Taken Name'})
+    level = yield utils.makeLevel({name: 'Another Level'})
+    json = _.extend({}, level.toObject(), {name: 'Taken Name'})
+    [res, body] = yield request.postAsync({url: utils.getURL("/db/level/#{level.id}"), json})
+    expect(res.statusCode).toBe(409)
+    level = yield Level.findById(level.id)
+    # should be unchanged
+    expect(level.get('slug')).toBeDefined()
+    expect(level.get('version').isLatestMinor).toBe(true)
+    expect(level.get('version').isLatestMajor).toBe(true)
+    expect(level.get('index')).toBeDefined()
+    done()
 
 
 describe 'GET /db/level/:handle/session', ->
